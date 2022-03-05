@@ -27,7 +27,7 @@
  */
 
 void dbg_uart_init();
-void dbg_printf(char *fmt, ...);
+void log(char *fmt, ...);
 extern unsigned long dbg_regs[37];
 extern char dbg_cmd[256], dbg_running;
 
@@ -43,22 +43,22 @@ void dbg_decodeexc(unsigned long type)
         "DblFault", "CoProc", "InvTSS", "SegFault", "StackFault", "GenProt", "PageFault", "Unknown", "Float", "Alignment",
         "MachineCheck", "Double" };
     if(type > 31)
-        dbg_printf("Interrupt %02x: IRQ %d\n", type, type - 32);
+        log("Interrupt %02x: IRQ %d\n", type, type - 32);
     else
-        dbg_printf("Exception %02x: %s, code %x\n", type, type < 20 ? exc[type] : "Unknown", dbg_regs[23]);
+        log("Exception %02x: %s, code %x\n", type, type < 20 ? exc[type] : "Unknown", dbg_regs[23]);
     for(i = 0; i < 8; i++) {
-        if(i && i%3==0) dbg_printf("\n");
-        dbg_printf("r%s: %16x  ",dbg_regnames[i],dbg_regs[i]);
+        if(i && i%3==0) log("\n");
+        log("r%s: %16x  ",dbg_regnames[i],dbg_regs[i]);
     }
     for(i = 8; i < 16; i++) {
-        if(i && i%3==0) dbg_printf("\n");
-        if(i<10) dbg_printf(" ");
-        dbg_printf("r%d: %16x  ",i,dbg_regs[i]);
+        if(i && i%3==0) log("\n");
+        if(i<10) log(" ");
+        log("r%d: %16x  ",i,dbg_regs[i]);
     }
-    dbg_printf("\n");
+    log("\n");
     /* if the exception happened in the debugger, we stop to avoid infinite loop */
     if(dbg_running) {
-        dbg_printf("Exception in mini debugger!\n"
+        log("Exception in mini debugger!\n"
             "  rip: %x  cr0: %x\n  cr1: %x  cr2: %x\n  cr3: %x  cr4: %x\nflags: %x code: %x\n",
             dbg_regs[16],dbg_regs[17],dbg_regs[18],dbg_regs[19],dbg_regs[20],dbg_regs[21],dbg_regs[22],dbg_regs[23]);
         while(1);
@@ -98,19 +98,19 @@ void dbg_dumpreg()
     int i;
     /* gprs */
     for(i = 0; i < 8; i++) {
-        if(i && i%3==0) dbg_printf("\n");
-        dbg_printf("r%s: %16x  ",dbg_regnames[i],dbg_regs[i]);
+        if(i && i%3==0) log("\n");
+        log("r%s: %16x  ",dbg_regnames[i],dbg_regs[i]);
     }
     /* r8 - r15 */
     for(i = 8; i < 16; i++) {
-        if(i && i%3==0) dbg_printf("\n");
-        if(i<10) dbg_printf(" ");
-        dbg_printf("r%d: %16x  ",i,dbg_regs[i]);
+        if(i && i%3==0) log("\n");
+        if(i<10) log(" ");
+        log("r%d: %16x  ",i,dbg_regs[i]);
     }
-    dbg_printf("\n");
+    log("\n");
     /* some system registers */
     if(dbg_running) {
-        dbg_printf("  rip: %x  cr0: %x\n  cr1: %x  cr2: %x\n  cr3: %x  cr4: %x\nflags: %x code: %x\n",
+        log("  rip: %x  cr0: %x\n  cr1: %x  cr2: %x\n  cr3: %x  cr4: %x\nflags: %x code: %x\n",
             dbg_regs[16],dbg_regs[17],dbg_regs[18],dbg_regs[19],dbg_regs[20],dbg_regs[21],dbg_regs[22],dbg_regs[23]);
         while(1);
     }

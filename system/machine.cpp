@@ -1,4 +1,5 @@
 #include <system.h>
+#include <stdarg.h>
 
 int cpuid_eax = 0;
 int cpuid_edx = 0;
@@ -64,8 +65,4 @@ void loop() {
 
 void ack() {
 	ac97_play((uint8_t*)&ok_sound, 27726, 44100, 2);
-}
-
-void log(char *message, char** args) {
-	dbg_printf(message, args);
 }

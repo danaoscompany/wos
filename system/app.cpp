@@ -1,23 +1,33 @@
 #include <system.h>
 
 void elf_run(char* data, int argc, char** argv) {
+	void (*go)(int argc, char** argv);
+	/*log("Entry point: %x\n", (uint32_t)data);
+	go = (uint32_t)data;
+	int result = go();
+	log("Result: %d\n", result);
+	return;*/
 	ELFHeader* h = (ELFHeader*)data;
-	int sh_count = (int)h->e_shnum;
-	if (sh_count >= 1) {
-		int sh_offs = (int)data+h->e_shoff;
-		for (int i=0; i<sh_count; i++) {
-			ELFSectionHeader* sh = (ELFSectionHeader*)sh_offs;
-			if (sh->sh_type == 0x08) {
-				memset(sh->sh_addr, 0, sh->sh_size);
-			} else {
-				memcpy(sh->sh_addr, (int)data+sh->sh_offset, sh->sh_size);
-			}
-			sh_offs += sizeof(ELFSectionHeader);
-		}
-		void (*go)();
-		go = h->e_entry;
-		go();
+	ELFProgramHeader* ph = (ELFProgramHeader*)(data+h->e_phoff);
+	for(int i = 0; i < h->e_phnum; i++, ph++)
+	{
+		switch(ph->p_type)
+		 {
+		 	case 0:
+		 		break;
+		 	case 1:
+		 		log("LOAD: offset 0x%x vaddr 0x%x paddr 0x%x filesz 0x%x memsz 0x%x\n",
+		 				ph->p_offset, ph->p_vaddr, ph->p_paddr, ph->p_filesz, ph->p_memsz);
+		 		memcpy(ph->p_vaddr, data + ph->p_offset, ph->p_filesz);
+		 		break;
+		 	default:
+		 	 return 0;
+		 }
 	}
+	log("Entry point: %x\n", h->e_entry);
+	int (*func)(int argc, char** argv) = (int (*)(void))((uint32_t)h->e_entry);
+	int x = func(argc, argv);
+	log("Result: %d\n", x);
 }
 
 void run_app(char* data, int argc, char** argv) {

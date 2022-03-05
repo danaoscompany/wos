@@ -167,7 +167,7 @@ unsigned int dbg_sprintf(char *dst, char* fmt, ...)
 /**
  * Display a string
  */
-void dbg_printf(char *fmt, ...)
+void log(char *fmt, ...)
 {
     char tmp[256], *s = (char*)&tmp;
     __builtin_va_list args;
@@ -198,7 +198,7 @@ void dbg_getline()
     int i,dbg_cmdidx=0,dbg_cmdlast=0;
     char c;
     dbg_cmd[0]=0;
-    dbg_printf("\r> ");
+    log("\r> ");
     while((c=dbg_uart_getc())!='\n') {
         /* decode CSI key sequences (some, not all) */
         if(c==27) {
@@ -249,9 +249,9 @@ void dbg_getline()
         }
         dbg_cmd[dbg_cmdlast]=0;
         /* display prompt and command line, place cursor with CSI code */
-        dbg_printf("\r> %s \r\033[%dC",dbg_cmd,dbg_cmdidx+2);
+        log("\r> %s \r\033[%dC",dbg_cmd,dbg_cmdidx+2);
     }
-    dbg_printf("\n");
+    log("\n");
 }
 
 /**
@@ -303,7 +303,7 @@ void dbg_main(unsigned long excnum)
 
     if(!dbg_running) {
         dbg_uart_init();
-        dbg_printf("Mini debugger by bzt\n");
+        log("Mini debugger by bzt\n");
     }
     dbg_decodeexc(excnum);
 
@@ -315,7 +315,7 @@ void dbg_main(unsigned long excnum)
         dbg_getline();
         /* parse commands */
         if(dbg_cmd[0]==0 || dbg_cmd[0]=='?' || dbg_cmd[0]=='h') {
-            dbg_printf("Mini debugger commands:\n"
+            log("Mini debugger commands:\n"
                 "  ?/h\t\tthis help\n"
                 "  c\t\tcontinue execution\n"
                 "  n\t\tmove to the next instruction\n"
@@ -363,32 +363,32 @@ dis:                os=oe=dbg_regs[31]?dbg_regs[31]:dbg_regs[30];
                 while(os<=oe) {
                     a=os;
                     os=disasm(os,str);
-                    dbg_printf("%8x:",a);
+                    log("%8x:",a);
                     for(j = 32; a < os; a++, j -= 3) {
-                        dbg_printf(" %02x",*((unsigned char*)a));
+                        log(" %02x",*((unsigned char*)a));
                     }
                     for(; j > 0; j--)
-                        dbg_printf(" ");
-                    dbg_printf("%s\n",str);
+                        log(" ");
+                    log("%s\n",str);
                 }
             } else {
                 /* dump memory */
                 if(oe<=os) oe=os+16;
                 for(a=os;a<oe;a+=16) {
-                    dbg_printf("%8x: ", a);
+                    log("%8x: ", a);
                     for(i=0;i<16;i++) {
-                        dbg_printf("%2x%s ",*((unsigned char*)(a+i)),i%4==3?" ":"");
+                        log("%2x%s ",*((unsigned char*)(a+i)),i%4==3?" ":"");
                     }
                     for(i=0;i<16;i++) {
                         c=*((unsigned char*)(a+i));
-                        dbg_printf("%c",c<32||c>=127?'.':c);
+                        log("%c",c<32||c>=127?'.':c);
                     }
-                    dbg_printf("\n");
+                    log("\n");
                 }
             }
             continue;
         } else {
-            dbg_printf("ERROR: unknown command.\n");
+            log("ERROR: unknown command.\n");
         }
     }
     dbg_running--;

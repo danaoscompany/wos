@@ -32,7 +32,7 @@
 #ifndef WOS_DEBUG_H
 #define WOS_DEBUG_H
 extern "C" void dbg_init();
-extern "C" void dbg_printf(char *fmt, ...);
+extern "C" void log(char *fmt, ...);
 
 /**
  * Save registers

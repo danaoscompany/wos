@@ -31,7 +31,6 @@ void mouse_handler(Register* regs) {
       	left_press = left_click;
       	right_click = mouse_byte[0]&0x2;
       	middle_click = mouse_byte[0]&0x4;
-      	dbg_printf("Left clicked: %d\n", left_click);
       	mouse_cycle = 1;
     } else if (mouse_cycle == 1) {
         mouse_byte[1]=inportb(0x60);

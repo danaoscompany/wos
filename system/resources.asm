@@ -79,3 +79,7 @@ shutdown_icon:
 global winamp_image
 winamp_image:
 	incbin "system/resource/winamp.bmp"
+	
+global program1
+program1:
+	incbin "system/programs/program1"

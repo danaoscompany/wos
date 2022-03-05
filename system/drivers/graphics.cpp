@@ -117,12 +117,30 @@ int get_buffer_offset(int x, int y, int bufferWidth, int bufferHeight) {
 	return (y*bufferWidth+x)*Bpp;
 }
 
-void put(int x, int y, int color) {
+void put(int x, int y, int _color) {
 	if (clip_set) {
 		if (x < clip_x || x >= clip_x+clip_width || y < clip_y || y >= clip_y+clip_height) return;
 	} else {
 		if (x < 0 || x >= screen_width || y < 0 || y >= screen_height) return;
 	}
+	int pos = get_offset(x, y);
+	int color = get_color_with_alpha(_color, get_color(x, y), (int)((_color>>24)&0xFF));
+	switch (bpp) {
+		case 24:
+			current_screen[pos] = color&0xFF;
+			current_screen[pos+1] = color>>8&0xFF;
+			current_screen[pos+2] = color>>16&0xFF;
+			break;
+	}
+}
+
+void put_with_alpha(int x, int y, int _color) {
+	if (clip_set) {
+		if (x < clip_x || x >= clip_x+clip_width || y < clip_y || y >= clip_y+clip_height) return;
+	} else {
+		if (x < 0 || x >= screen_width || y < 0 || y >= screen_height) return;
+	}
+	int color = get_color_with_alpha(_color, get_color(x, y), (int)((_color>>24)&0xFF));
 	int pos = get_offset(x, y);
 	switch (bpp) {
 		case 24:
@@ -203,7 +221,17 @@ int get_height() {
 	return screen_height;
 }
 
+int get_bpp() {
+	return bpp;
+}
+
+int get_Bpp() {
+	return Bpp;
+}
+
 int get_color_with_alpha(int color, int bgColor, int alpha_) {
+	if (alpha_ == 0) return 0;
+	if (alpha_ == 255) return 0xff000000|color;
 	double alpha = (double)alpha_/255;
 	int red = color>>16&0xFF;
 	int green = color>>8&0xFF;
@@ -264,7 +292,7 @@ void draw_bmp_image(unsigned char* data, int x, int y) {
 				int blue = (int)data[pos];
 				int green = (int)data[pos+1];
 				int red = (int)data[pos+2];
-				int color = (red<<16)|(green<<8)|blue;
+				int color = (0xff<<24)|(red<<16)|(green<<8)|blue;
 				put(i, j, color);
 				pos += 3;
 			}
@@ -281,8 +309,8 @@ void draw_bmp_image(unsigned char* data, int x, int y) {
 				int blue = (int)data[pos+1];
 				int green = (int)data[pos+2];
 				int red = (int)data[pos+3];
-				int color = (red<<16)|(green<<8)|blue;
-				color = get_color_with_alpha(color, get_color(i, j), alpha);
+				int _color = (red<<16)|(green<<8)|blue;
+				int color = get_color_with_alpha(_color, get_color(i, j), alpha);
 				put(i, j, color);
 				pos += 4;
 			}
@@ -533,11 +561,12 @@ void fill_circle(unsigned int x0, unsigned int y0, unsigned int radius,int color
     }
 }
 
-static int mix_color(int color1, int color2, int prop, int max) {
+int mix_color(int color1, int color2, int prop, int max) {
+	int alpha = (((color1>>24)&0xFF)*prop+((color2>>24)&0xFF)*(max-prop))/max;
 	int red = (((color1>>16)&0xFF)*prop+((color2>>16)&0xFF)*(max-prop))/max;
 	int green = (((color1>>8)&0xFF)*prop+((color2>>8)&0xFF)*(max-prop))/max;
 	int blue = ((color1&0xFF)*prop+(color2&0xFF)*(max-prop))/max;
-	return (red<<16)|(green<<8)|blue;
+	return (alpha<<24)|(red<<16)|(green<<8)|blue;
 }
 
 void draw_gradient(int x, int y, int width, int height, int color1, int color2, int direction) {
@@ -586,5 +615,15 @@ void draw_animation(char* data, int total, int delay, int x, int y, int position
 		imageX -= clipWidth;
 		i++;
 		sleep(delay);
+	}
+}
+
+void flush_window(Window* window) {
+	uint8_t* dst = get_offscreen()+((window->y*get_width()+window->x+6)*window->Bpp);
+	uint8_t* src = window->buffer;
+	for (int i=34; i<window->height-4; i++) {
+		memcpy(dst, src, (window->width-12)*window->Bpp);
+		dst = get_offscreen()+(((window->y+i)*get_width()+window->x+6)*window->Bpp);
+		src = window->buffer+(i*window->width*window->Bpp);
 	}
 }

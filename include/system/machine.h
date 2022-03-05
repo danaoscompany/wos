@@ -15,6 +15,5 @@ void wait();
 void stop();
 void loop();
 void ack();
-void log(char *message, char** args);
 
 #endif

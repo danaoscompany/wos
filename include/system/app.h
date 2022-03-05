@@ -43,5 +43,6 @@ typedef struct {
 } ELFSectionHeader;
 
 void run_app(char* data, int argc, char** argv);
+void elf_run(char* data, int argc, char** argv);
 
 #endif

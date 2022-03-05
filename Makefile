@@ -42,7 +42,7 @@ run_qemu: $(S_OBJECTS) $(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
 	$(C_COMPILER) -T linker.ld -o kernel -ffreestanding -nostdlib $^ -lgcc
 	cp kernel iso/boot
 	grub-mkrescue -o WOS.iso iso
-	qemu-system-i386 -cdrom WOS.iso -device AC97 -serial stdio
+	qemu-system-i386 -cdrom WOS.iso -device AC97 -serial stdio -m 1G
 	
 run_ownBootloader: $(S_OBJECTS) $(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
 	cd loader; make

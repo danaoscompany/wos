@@ -127,6 +127,7 @@ extern "C" void fault_handler(Register* r);
 void fault_handler(Register* r) {
 	void (*handler)(Register* regs);
     handler = isr_routines[r->int_no];
+    log("Fault: %s\n", (char*)exception_messages[(uint32_t)r->int_no]);
     if (handler) {
         handler(r);
     }

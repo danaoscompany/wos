@@ -26,7 +26,7 @@
  * @brief: IBM PC compatible UART functions for the mini debugger
  */
 
-void dbg_printf(char *fmt, ...);
+void log(char *fmt, ...);
 
 
 /**

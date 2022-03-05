@@ -22,5 +22,6 @@ extern "C" unsigned int song3;
 extern "C" unsigned int song4;
 extern "C" unsigned int winamp_image;
 extern "C" unsigned int ok_sound;
+extern "C" unsigned int program1;
 
 #endif

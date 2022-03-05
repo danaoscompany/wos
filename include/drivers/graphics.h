@@ -1,6 +1,8 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#include <system/window.h>
+
 #define ARIAL_FONT_SIZE 296712
 #define FROM_LEFT_TOP 0
 #define FROM_RIGHT_BOTTOM 1
@@ -68,6 +70,7 @@ void flush_area(int x, int y, int width, int height);
 int get_offset(int x, int y);
 void fill_rect(int x, int y, int width, int height, int color);
 void put(int x, int y, int color);
+void put_with_alpha(int x, int y, int color);
 void put_to_screen(uint8_t* screen, int x, int y, int color);
 extern "C" void flush_sse(unsigned char* screen, unsigned char* current_screen, int copy_size);
 void fill_bg(int color);
@@ -98,5 +101,9 @@ void custom_copy_screen_buffer(uint8_t* src, int srcX, int srcY, int srcWidth, i
 void draw_image_to_screen(uint8_t* screen, char* data, int x, int y, int position);
 unsigned char* get_windows_buffer();
 void copy_screen(unsigned char* dst, unsigned char* src);
+int get_bpp();
+int get_Bpp();
+void flush_window(Window* window);
+int mix_color(int color1, int color2, int prop, int max);
 
 #endif

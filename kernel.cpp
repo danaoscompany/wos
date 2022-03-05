@@ -64,7 +64,27 @@ void askingForShutdown_Activity() {
 }
 
 void shut_down() {
-	
+}
+
+extern "C" void loadPageDirectory(unsigned int*);
+extern "C" void enablePaging();
+
+void init_paging() {
+	uint32_t page_directory[1024] __attribute__((aligned(4096)));
+	for(int i=0; i<1024; i++) {
+    	page_directory[i] = 0x00000002;
+	}
+	uint32_t first_page_table[1024][1024] __attribute__((aligned(4096)));
+	uint32_t addr = 0;
+	for (int j=0; j<1024; j++) {
+		for(int i=0; i<1024; i++) {
+    		first_page_table[j][i] = addr | 3;
+    		addr += 4096;
+		}
+	}
+	page_directory[0] = ((unsigned int)first_page_table) | 3;
+	loadPageDirectory(page_directory);
+	enablePaging();
 }
 
 int main(BootInfo* bootInfo) {
@@ -80,6 +100,7 @@ int main(BootInfo* bootInfo) {
 	init_pit(1000);
 	init_keyboard();
 	init_mouse();
+	init_paging();
 	//init_notifications();
 	asm volatile("sti");
 	set_utc(7);
@@ -95,21 +116,30 @@ int main(BootInfo* bootInfo) {
 	//File* wallpaper = open_file("C:/eiffel.bmp");
 	set_font((char*)&arial_font, ARIAL_FONT_SIZE);
 	draw_image((char*)&wallpaper, 0, 0, 0);
-	fill_rect(0, 570, 800, 30, 0x000000);
-	draw_image((char*)&start_icon, 0, 571, 0);
-	draw_image((char*)&file_manager_icon, 45, 573, 0);
-	draw_image((char*)&shutdown_icon, 770, 573, 0);
+	//fill_rect(0, 0, 800, 600, 0xffffffff);
+	init_windows();
+	char* argv[3];
+	argv[0] = (char*)&arial_font;
+	argv[1] = 296712;
+	argv[2] = "Halo dunia";
+	//elf_run((uint8_t*)&program1, 3, argv);
+	return 0;
+	flush();
+	set_screen(get_main_screen());
+	
+	draw_image((char*)&file_manager_icon, 0, 573, 0);
+	draw_image((char*)&shutdown_icon, 725, 573, 0);
 	if (is_clicked(770, 573, 800, 600)) {
 		askingForShutdown_Activity();
 	}
-	draw_bmp_image((char*)&winamp_image, 100, 50);
-	init_windows();
-	Window* window = (Window*)malloc(sizeof(Window));
+	/*Window* window = (Window*)malloc(sizeof(Window));
 	window->x = 150;
 	window->y = 50;
 	window->width = 300;
 	window->height = 200;
 	window->backgroundColor = 0xff0000;
+	window->borderWidth = 2;
+	window->title = "Window 1";
 	window->tag = 101;
 	create_window(window);
 	window = (Window*)malloc(sizeof(Window));
@@ -118,6 +148,8 @@ int main(BootInfo* bootInfo) {
 	window->width = 400;
 	window->height = 400;
 	window->backgroundColor = 0x00ff00;
+	window->borderWidth = 2;
+	window->title = "Window 2";
 	window->tag = 102;
 	create_window(window);
 	window = (Window*)malloc(sizeof(Window));
@@ -125,11 +157,44 @@ int main(BootInfo* bootInfo) {
 	window->y = 100;
 	window->width = 200;
 	window->height = 300;
+	window->borderWidth = 2;
 	window->backgroundColor = 0x0000ff;
+	window->title = "Window 3";
 	window->tag = 102;
+	create_window(window);*/
+	
+	Window* window = (Window*)malloc(sizeof(Window));
+	window->x = 50;
+	window->y = 50;
+	window->width = 600;
+	window->height = 400;
+	window->backgroundColor = 0xff0000;
+	window->borderWidth = 2;
+	window->title = "Window 1";
+	window->tag = 101;
+	window->bpp = get_bpp();
+	window->Bpp = get_Bpp();
 	create_window(window);
-	flush();
-	set_screen(get_main_screen());
+	window->buffer = (uint8_t*)malloc(window->width*window->height*window->Bpp);
+	window_fill_rect(window, 0, 0, window->width, window->height, 0xff000000);
+	flush_window(window);
+	
+	// Draw taskbar
+	Window* taskbar = (Window*)malloc(sizeof(Window));
+	taskbar->x = -10;
+	taskbar->y = get_height()-30;
+	taskbar->width = get_width()+20;
+	taskbar->height = 30;
+	taskbar->backgroundColor = 0xff0000;
+	taskbar->borderWidth = 2;
+	taskbar->title = NULL;
+	taskbar->tag = 0;
+	taskbar->bpp = get_bpp();
+	taskbar->Bpp = get_Bpp();
+	create_window(taskbar);
+	taskbar->buffer = (uint8_t*)malloc(taskbar->width*taskbar->height*taskbar->Bpp);
+	flush_window(taskbar);
+	
 	copy_screen(get_windows_buffer(), get_main_screen());
 	while (1) {
 		refresh_windows();
